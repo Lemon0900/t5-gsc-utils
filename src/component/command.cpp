@@ -74,9 +74,14 @@ namespace command
 		void client_command_stub(const int client_num)
 		{
 			params_sv params = {};
+			if (params.size() < 1)
+			{
+				client_command_hook.invoke<void>(client_num);
+				return;
+			}
 
 			const auto command = utils::string::to_lower(params[0]);
-			if ((command == "say" || command == "say_team") &&
+			if (params.size() > 1 && (command == "say" || command == "say_team") &&
 				handle_chat_command(client_num, params))
 			{
 				return;
@@ -262,7 +267,7 @@ namespace command
 	class component final : public component_interface
 	{
 	public:
-		void post_unpack() override
+		void on_startup([[maybe_unused]] plugin::plugin* plugin) override
 		{
 			scripting::on_shutdown(clear);
 			client_command_hook.create(SELECT_VALUE(0x4AF770, 0x63DB70), client_command_stub);
